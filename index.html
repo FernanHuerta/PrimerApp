@@ -1,0 +1,83 @@
+<html>
+    <head>
+        <meta charset="utf-8" />
+        
+        <title>Prueba</title>
+        <script type="text/javascript">
+            var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+            
+            var dataBase = null;
+            
+            function startDB() {
+                
+                dataBase = indexedDB.open('object', 1);
+                
+                dataBase.onupgradeneeded = function (e) {
+                    var active = dataBase.result;
+                    
+                    var object = active.createObjectStore("people", { keyPath : 'id', autoIncrement : true });
+                    object.createIndex('by_nombre', 'nombre', { unique : false });
+                    object.createIndex('by_Lab', 'lab', { unique : true });
+					object.createIndex('by_Topico', 'topico', { unique : true });
+					object.createIndex('by_Prioridad', 'prioridad', { unique : true });
+                };
+                
+                dataBase.onsuccess = function (e) {
+                    alert('Database loaded');
+                };
+                dataBase.onerror = function (e) {
+                    alert('Error loading database');
+                };
+            }
+            
+            function add() {
+                
+                var active = dataBase.result;
+                var data = active.transaction(["people"], "readwrite");
+                var object = data.objectStore("people");
+                
+                var request = object.put({
+                    nombre : document.querySelector("#nombre").value,
+                    lab : document.querySelector("#lab").value,
+					prioridad : document.querySelector("#prioridad").value,
+                    topico : document.querySelector("#topico").value,
+                    surname : document.querySelector("#surname").value
+                });
+                
+                request.onerror = function (e) {
+                    alert(request.error.name + '\n\n' + request.error.message);
+                };
+                
+                data.oncomplete = function (e) {
+                    document.querySelector('#nombre').value = '';
+                    document.querySelector('#lab').value = '';
+					document.querySelector('#prioridad').value = '';
+                    document.querySelector('#topico').value = '';
+                    document.querySelector('#surname').value = '';
+                    alert('Object successfully added');
+                };
+            }
+        </script>
+    </head>
+    <body onload="startDB();">
+	
+        <input type="text" id="nombre" placeholder="Ingresa nombre" />
+        <input type="text" id="lab" placeholder="Ingresa el Lab" />
+        <input type="text" id="prioridad" placeholder="Ingresa la prioridad" />
+        <input type="text" id="topico" placeholder="Ingresa el topico" />
+        <input type="text" id="surname" placeholder="Enter surname" />
+        <button type="button" onclick="add();">Save</button>
+        <div class="app">
+            <h1>PhoneGap</h1>
+            <div id="deviceready" class="blink">
+                <p class="event listening">Connecting to Device</p>
+                <p class="event received">Device is Ready</p>
+            </div>
+        </div>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript">
+            app.initialize();
+        </script>
+    </body>
+</html>
